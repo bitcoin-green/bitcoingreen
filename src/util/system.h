@@ -81,6 +81,9 @@ fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 void runCommand(const std::string& strCommand);
 #endif
 
+/** Translate a message to the native language of the user. */
+const extern std::function<std::string(const char*)> G_TRANSLATION_FUN;
+
 /**
  * Most paths passed as configuration arguments are treated as relative to
  * the datadir if they are not absolute.
