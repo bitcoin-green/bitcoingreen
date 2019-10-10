@@ -32,6 +32,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 #include <boost/thread/condition_variable.hpp> // for boost::thread_interrupted
 
@@ -80,9 +81,6 @@ fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #if HAVE_SYSTEM
 void runCommand(const std::string& strCommand);
 #endif
-
-/** Translate a message to the native language of the user. */
-const extern std::function<std::string(const char*)> G_TRANSLATION_FUN;
 
 /**
  * Most paths passed as configuration arguments are treated as relative to
@@ -286,6 +284,7 @@ public:
     bool IsArgKnown(const std::string& key) const;
 };
 
+extern const std::unordered_map<std::string, std::vector<std::string> >& mapMultiArgs;
 extern ArgsManager gArgs;
 
 /**

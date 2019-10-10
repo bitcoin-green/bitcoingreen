@@ -226,6 +226,9 @@ public:
         fAllowMultiplePorts = false;
         nFulfilledRequestExpireTime = 60*60; // fulfilled requests expire in 1 hour
 
+        vSporkAddresses = {"GYWNfvtneKSXcU2cm7b7scJ3AcgLGFaVRx"};
+        nMinSporkKeys = 1;
+
         checkpointData = {
             {}};
 
@@ -328,6 +331,9 @@ public:
         fAllowMultiplePorts = false;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
 
+        vSporkAddresses = {""};
+        nMinSporkKeys = 1;
+
         checkpointData = {
             {}};
 
@@ -409,6 +415,9 @@ public:
         fMiningRequiresPeers = false;
         fAllowMultiplePorts = true;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
+
+        vSporkAddresses = {""};
+        nMinSporkKeys = 1;
 
         checkpointData = {
             {}};
