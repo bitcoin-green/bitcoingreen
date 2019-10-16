@@ -14,6 +14,7 @@
 #include <init.h>
 #include <net_processing.h>
 #include <shutdown.h>
+#include <spork.h>
 #include <validation.h>
 
 namespace llmq
@@ -147,7 +148,7 @@ bool CDKGSessionHandler::InitNewQuorum(const CBlockIndex* pindexQuorum)
 
     const auto& consensus = Params().GetConsensus();
 
-    if (pindexQuorum->nHeight < consensus.nLLMQActivationHeight)
+    if (sporkManager.IsSporkActive(SPORK_4_QUORUM_DKG_ENABLED))
         return false;
 
     curSession = std::make_shared<CDKGSession>(params, blsWorker, dkgManager);

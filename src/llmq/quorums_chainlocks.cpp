@@ -13,6 +13,7 @@
 #include <net.h>
 #include <net_processing.h>
 #include <scheduler.h>
+#include <spork.h>
 #include <txmempool.h>
 #include <util/init.h>
 #include <validation.h>
@@ -208,9 +209,7 @@ void CChainLocksHandler::UpdatedBlockTip(const CBlockIndex* pindexNew)
 
 void CChainLocksHandler::CheckActiveState()
 {
-    // TODO: BitGreen - Check if chainlock spork is active
-
-    isEnforced = ChainActive().Tip()->nHeight > Params().GetConsensus().nLLMQActivationHeight;
+    isEnforced = sporkManager.IsSporkActive(SPORK_5_CHAINLOCKS_ENABLED);
 
     LOCK(cs);
     bestChainLockHash = uint256();

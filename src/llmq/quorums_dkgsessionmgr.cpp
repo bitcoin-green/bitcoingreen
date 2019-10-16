@@ -11,6 +11,7 @@
 
 #include <chainparams.h>
 #include <net_processing.h>
+#include <spork.h>
 #include <validation.h>
 
 namespace llmq
@@ -56,10 +57,8 @@ void CDKGSessionManager::UpdatedBlockTip(const CBlockIndex* pindexNew, bool fIni
 
     if (fInitialDownload)
         return;
-    if (pindexNew->nHeight < consensus.nLLMQActivationHeight)
+    if (!sporkManager.IsSporkActive(SPORK_4_QUORUM_DKG_ENABLED))
         return;
-
-    // TODO: BitGreen - Check spork quorum dkg
 
     for (auto& qt : dkgSessionHandlers) {
         qt.second.UpdatedBlockTip(pindexNew);

@@ -15,6 +15,7 @@
 #include <consensus/validation.h>
 #include <net.h>
 #include <net_processing.h>
+#include <spork.h>
 #include <primitives/block.h>
 #include <validation.h>
 
@@ -123,7 +124,7 @@ bool CQuorumBlockProcessor::ProcessBlock(const CBlock& block, const CBlockIndex*
 {
     AssertLockHeld(cs_main);
 
-    if (pindex->nHeight < Params().GetConsensus().nLLMQActivationHeight) {
+    if (!sporkManager.IsSporkActive(SPORK_4_QUORUM_DKG_ENABLED)) {
         specialDb.Write(DB_BEST_BLOCK_UPGRADE, block.GetHash());
         return true;
     }
@@ -283,7 +284,7 @@ bool CQuorumBlockProcessor::GetCommitmentsFromBlock(const CBlock& block, const C
         }
     }
 
-    if (pindex->nHeight < Params().GetConsensus().nLLMQActivationHeight && !ret.empty())
+    if (!sporkManager.IsSporkActive(SPORK_4_QUORUM_DKG_ENABLED) && !ret.empty())
         return state.Invalid(ValidationInvalidReason::CONSENSUS, false, REJECT_INVALID, "bad-qc-premature");
 
     return true;

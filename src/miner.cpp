@@ -25,6 +25,7 @@
 #include <script/standard.h>
 #include <special/specialtx.h>
 #include <special/cbtx.h>
+#include <spork.h>
 #include <timedata.h>
 #include <util/moneystr.h>
 #include <util/system.h>
@@ -201,7 +202,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
         coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, chainparams.GetConsensus());
     }
 
-    if (nHeight > chainparams.GetConsensus().nLLMQActivationHeight) {
+    if (sporkManager.IsSporkActive(SPORK_4_QUORUM_DKG_ENABLED)) {
         for (auto& p : chainparams.GetConsensus().llmqs) {
             CTransactionRef qcTx;
             if (llmq::quorumBlockProcessor->GetMinableCommitmentTx(p.first, nHeight, qcTx)) {
