@@ -3062,7 +3062,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock& locked_chain, const std
             CFeeRate nFeeRateNeeded = GetMinimumFeeRate(*this, coin_control, &feeCalc);
 
             nFeeRet = 0;
-            bool pick_new_inputs = true;
+            bool pick_new_inputs = false;
             CAmount nValueIn = 0;
 
             // BnB selector is the only selector used when this is true.
