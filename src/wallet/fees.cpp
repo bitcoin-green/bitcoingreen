@@ -60,9 +60,6 @@ CFeeRate GetMinimumFeeRate(const CWallet& wallet, const CCoinControl& coin_contr
             // if we don't have enough data for estimateSmartFee, then use fallback fee
             feerate_needed = wallet.m_fallback_fee;
             if (feeCalc) feeCalc->reason = FeeReason::FALLBACK;
-
-            // directly return if fallback fee is disabled (feerate 0 == disabled)
-            if (wallet.m_fallback_fee == CFeeRate(0)) return feerate_needed;
         }
         // Obey mempool min fee when using smart fee estimation
         CFeeRate min_mempool_feerate = wallet.chain().mempoolMinFee();
