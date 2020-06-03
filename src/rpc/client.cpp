@@ -71,6 +71,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendmany", 5 , "replaceable" },
     { "sendmany", 6 , "conf_target" },
     { "deriveaddresses", 1, "range" },
+        { "getblockhashes", 0, "high"},
+    { "getblockhashes", 1, "low" },
     { "scantxoutset", 1, "scanobjects" },
     { "addmultisigaddress", 0, "nrequired" },
     { "addmultisigaddress", 1, "keys" },
