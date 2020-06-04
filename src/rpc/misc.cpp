@@ -561,7 +561,15 @@ bool getIndexKey(const std::string& str, uint160& hashBytes, int& type)
     }
     const PKHash *pkID = boost::get<PKHash>(&dest);
     type = pkID ? 1 : 2;
-    hashBytes = *pkID;
+    if(type == 2)
+    {
+        const ScriptHash *sID = boost::get<ScriptHash>(&dest);
+        hashBytes = *sID;
+    }
+    else
+    {
+        hashBytes = *pkID;
+    }
     return true;
 }
 
