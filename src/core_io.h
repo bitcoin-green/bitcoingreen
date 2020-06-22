@@ -19,6 +19,8 @@ struct CMutableTransaction;
 class uint256;
 class UniValue;
 
+struct CSpentIndexTxInfo;
+
 // core_read.cpp
 CScript ParseScript(const std::string& s);
 std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDecode = false);
@@ -45,6 +47,6 @@ std::string EncodeHexTx(const CTransaction& tx, const int serializeFlags = 0);
 std::string SighashToStr(unsigned char sighash_type);
 void ScriptPubKeyToUniv(const CScript& scriptPubKey, UniValue& out, bool fIncludeHex);
 void ScriptToUniv(const CScript& script, UniValue& out, bool include_address);
-void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry, bool include_hex = true, int serialize_flags = 0);
+void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry, bool include_hex = true, const CSpentIndexTxInfo* ptxSpentInfo = nullptr, int serialize_flags = 0);
 
 #endif // BITGREEN_CORE_IO_H

@@ -55,9 +55,29 @@ static void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& 
     // Blockchain contextual information (confirmations and blocktime) is not
     // available to code in bitgreen-common, so we query them here and push the
     // data into the returned UniValue.
-    TxToUniv(tx, uint256(), entry, true, RPCSerializationFlags());
 
     uint256 txid = tx.GetHash();
+
+    CSpentIndexTxInfo txSpentInfo;
+    for (const auto& txin : tx.vin) {
+        if (!tx.IsCoinBase() || !tx.IsCoinStake()) {
+            CSpentIndexValue spentInfo;
+            CSpentIndexKey spentKey(txin.prevout.hash, txin.prevout.n);
+            if (GetSpentIndex(spentKey, spentInfo)) {
+                txSpentInfo.mSpentInfo.emplace(spentKey, spentInfo);
+            }
+        }
+    }
+
+    for (unsigned int i = 0; i < tx.vout.size(); i++) {
+        CSpentIndexValue spentInfo;
+        CSpentIndexKey spentKey(txid, i);
+        if (GetSpentIndex(spentKey, spentInfo)) {
+            txSpentInfo.mSpentInfo.emplace(spentKey, spentInfo);
+        }
+    }
+
+    TxToUniv(tx, uint256(), entry, true, &txSpentInfo);
 
     if (!tx.vExtraPayload.empty()) {
         entry.pushKV("extraPayloadSize", (uint64_t)tx.vExtraPayload.size());
@@ -111,20 +131,23 @@ static void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& 
     bool chainLock = false;
     if (!hashBlock.IsNull()) {
         LOCK(cs_main);
-
         entry.pushKV("blockhash", hashBlock.GetHex());
-        CBlockIndex* pindex = LookupBlockIndex(hashBlock);
-        if (pindex) {
-            if (::ChainActive().Contains(pindex)) {
+        BlockMap::iterator mi = ::BlockIndex().find(hashBlock);
+        if (mi != ::BlockIndex().end() && (*mi).second) {
+            CBlockIndex* pindex = (*mi).second;
+            if (ChainActive().Contains(pindex)) {
+                entry.pushKV("height", pindex->nHeight);
                 entry.pushKV("confirmations", 1 + ::ChainActive().Height() - pindex->nHeight);
                 entry.pushKV("time", pindex->GetBlockTime());
                 entry.pushKV("blocktime", pindex->GetBlockTime());
                 chainLock = llmq::chainLocksHandler->HasChainLock(pindex->nHeight, pindex->GetBlockHash());
-            }
-            else
+            } else {
+                entry.pushKV("height", -1);
                 entry.pushKV("confirmations", 0);
+            }
         }
     }
+
     bool fLLMQLocked = llmq::quorumInstantSendManager->IsLocked(txid);
     entry.pushKV("instantlock", fLLMQLocked || chainLock);
     entry.pushKV("instantlock_internal", fLLMQLocked);

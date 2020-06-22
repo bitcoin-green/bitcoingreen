@@ -15,6 +15,8 @@
 #include <util/system.h>
 #include <util/strencodings.h>
 
+#include <spentindex.h>
+
 UniValue ValueFromAmount(const CAmount& amount)
 {
     bool sign = amount < 0;
@@ -175,8 +177,9 @@ void ScriptPubKeyToUniv(const CScript& scriptPubKey,
     out.pushKV("addresses", a);
 }
 
-void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry, bool include_hex, int serialize_flags)
+void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry, bool include_hex, const CSpentIndexTxInfo* ptxSpentInfo, int serialize_flags)
 {
+    uint256 txid = tx.GetHash();
     entry.pushKV("txid", tx.GetHash().GetHex());
     entry.pushKV("hash", tx.GetWitnessHash().GetHex());
     entry.pushKV("version", tx.nVersion);
@@ -206,6 +209,22 @@ void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry,
                 }
                 in.pushKV("txinwitness", txinwitness);
             }
+
+            // Add address and value info if spentindex enabled
+            if (ptxSpentInfo != nullptr) {
+                CSpentIndexKey spentKey(txin.prevout.hash, txin.prevout.n);
+                auto it = ptxSpentInfo->mSpentInfo.find(spentKey);
+                if (it != ptxSpentInfo->mSpentInfo.end()) {
+                    auto spentInfo = it->second;
+                    in.pushKV("value", ValueFromAmount(spentInfo.satoshis));
+                    in.pushKV("valueSat", spentInfo.satoshis);
+                    if (spentInfo.addressType == 1) {
+                        in.pushKV("address", EncodeDestination(PKHash(spentInfo.addressHash)));
+                    } else if (spentInfo.addressType == 2) {
+                        in.pushKV("address", EncodeDestination(ScriptHash(spentInfo.addressHash)));
+                    }
+                }
+            }
         }
         in.pushKV("sequence", (int64_t)txin.nSequence);
         vin.push_back(in);
@@ -219,11 +238,22 @@ void TxToUniv(const CTransaction& tx, const uint256& hashBlock, UniValue& entry,
         UniValue out(UniValue::VOBJ);
 
         out.pushKV("value", ValueFromAmount(txout.nValue));
+        out.pushKV("valueSat", txout.nValue);
         out.pushKV("n", (int64_t)i);
 
         UniValue o(UniValue::VOBJ);
         ScriptPubKeyToUniv(txout.scriptPubKey, o, true);
         out.pushKV("scriptPubKey", o);
+        if (ptxSpentInfo != nullptr) {
+            CSpentIndexKey spentKey(txid, i);
+            auto it = ptxSpentInfo->mSpentInfo.find(spentKey);
+            if (it != ptxSpentInfo->mSpentInfo.end()) {
+                auto spentInfo = it->second;
+                out.pushKV("spentTxId", spentInfo.txid.GetHex());
+                out.pushKV("spentIndex", (int)spentInfo.inputIndex);
+                out.pushKV("spentHeight", spentInfo.blockHeight);
+            }
+        }
         vout.push_back(out);
     }
     entry.pushKV("vout", vout);
